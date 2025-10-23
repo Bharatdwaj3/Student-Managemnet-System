@@ -7,10 +7,31 @@ const{
     
 } =require('../controllers/FacultyController');
 
-router.get('/',getFacultys);
-router.get('/:id',getFaculty);
-router.post('/:id',upload.single('image'),createFaculty);
-router.put('/:id',upload.single('image'),updateFaculty);
-router.delete('/:id',deleteFaculty);
+const checkPermission = require('../middleware/checkPermission');
+const roleMiddleware = require('../middleware/roleMiddleware');
+
+
+router.get('/',
+    roleMiddleware(['admin','faculty','student']),
+    checkPermission('view_facultys'),
+    getFacultys);
+router.get('/:id',
+    roleMiddleware(['admin','faculty','student']),
+    checkPermission('view_facultys'),
+    getFaculty);
+router.post('/:id',
+    upload.single('image'),
+    roleMiddleware(['admin',]),
+    checkPermission('create_faculty'),
+    createFaculty);
+router.put('/:id',
+    roleMiddleware(['admin']),
+    checkPermission('update_faculty'),
+    upload.single('image'),
+    updateFaculty);
+router.delete('/:id',
+    roleMiddleware(['admin']),
+    checkPermission('delete_facultys'),
+    deleteFaculty);
 
 module.exports=router;

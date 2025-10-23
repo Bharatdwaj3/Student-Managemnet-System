@@ -1,8 +1,15 @@
 const mongoose=require('mongoose');
 const userSchema=new mongoose.Schema({
-    name: {
+    userName: {
         type:String,
         required:[true, 'User Name is required'],
+        trim:true,
+        minLength:2,
+        maxLength:50,
+    },
+    fullName: {
+        type:String,
+        required:[true, 'Full Name is required'],
         trim:true,
         minLength:2,
         maxLength:50,
@@ -14,17 +21,17 @@ const userSchema=new mongoose.Schema({
         trim: true,
         lowercase: true,
         match: [/\S+@\S+\.\S+/, 'Please fill a valid email address'],
-    }, 
-    password:{
+    },
+    accountType:{
         type:String,
-        required:[true, 'User Password is required'],
-        minLength:6,
+        required: [true, 'Account type is required'],
+        enum:['student', 'faculty', 'admin'],
     },
     password:{
         type:String,
         required:[true, 'User Password is required'],
         minLength:6,
-    }
+    },
 },{
     timestamps:true
 });

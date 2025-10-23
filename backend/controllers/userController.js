@@ -1,23 +1,41 @@
 const bycrypt = require('bcryptjs');
 const jwt=require('jsonwebtoken');
 const User=require('../models/userModel');
-
-const signupUser=async(req, res)=>{
+const { JWT_SECRET } = require('../config/env.config');
+const registerUser=async(req, res)=>{
   try{
-    const {fullName, email, accountType, password}=req.body;
-    let user=await User.findOne({email});
-    if(user){
-      return res.status(400).json({message:'User with this email already exists!'});
+        if (!req.body) {
+        return res.status(400).json({ success: false, message: 'Missing request body' });
     }
-    user=new User({fullName, email, accountType, password});
 
+    const userName = req.body.userName;
+    const fullName = req.body.fullName;
+    const email = req.body.email;
+    const accountType=req.body.accountType;
+    const password=req.body.password;
+
+    if(!userName || !fullName || !email || !accountType || !password){
+      return res.status(400).json({message: 'All fields are req!!'});
+    }
+    const existingUser = await User.findOne({ email });
+      if(existingUser){
+        return res.status(400).json({message: 'User with this email already exists!'});
+      }
+
+    const user=new User({
+      userName: userName,
+      fullName: fullName,
+      email: email,
+      accountType: accountType,
+      password: password
+    })
     const salt=await bycrypt.genSalt(10);
     user.password=await bycrypt.hash(password, salt);
 
     await user.save();
     res.status(201).json({message:'User registered successfully'});
 
-  }catch{
+  }catch(error){
     console.error('Error registering user: ',error);
     res.status(500).json({message:'Server Error'});
   }
@@ -36,7 +54,7 @@ const loginUser=async(req, res)=>{
     }
     const payload={user:{id:user.id}};
     jwt.sign(
-      payload, process.env.JWT_SECRET,
+      payload, JWT_SECRET,
       {expiresIn:'5h'},
       (err, token)=>{
         if(err) throw err;
@@ -53,11 +71,28 @@ const loginUser=async(req, res)=>{
     )
   }catch(error){
     console.error('Error logging in : ',error);
-    res.status(500).join({message: 'Server Error'});
+    res.status(500).json({message: 'Server Error'});
+  }
+};
+
+const profileUser=async(req, res)=>{
+  try{
+    const user=await User.findById(req.user.id).select('-password');
+    if(!user){
+      return res.status(404).json({message: 'User not found'});
+    }
+    res.status(200).json({
+      message: 'Welcome to your dashboard!',
+      user,
+    });
+  }catch(error){
+    console.error('Error fetching profile: ',error);
+    res.status(500).json({message: 'Server error'});
   }
 };
 
 module.exports={
-  signupUser,
+  registerUser,
   loginUser,
+  profileUser
 };
