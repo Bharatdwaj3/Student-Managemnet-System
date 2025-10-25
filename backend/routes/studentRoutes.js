@@ -3,31 +3,32 @@ const upload=require('../services/multer');
 const router=express.Router();
 const{
     getStudent, createStudent, updateStudent, deleteStudent,
-    getStudents, 
+    getStudents, updateStudentProfile
 
 } =require('../controllers/studentComtroller');
 
 const checkPermission = require('../middleware/checkPermission');
 const roleMiddleware = require('../middleware/roleMiddleware');
+const authUser=require('../middleware/authMiddleware');
 
 router.get('/',
     roleMiddleware(['admin','faculty','student']),
     checkPermission('view_students'),
     getStudents);
 router.get('/:id',
-    roleMiddleware(['admin','student']), 
-    checkPermission('view_student'),
+    authUser, 
+    roleMiddleware(['student']), 
+    checkPermission('view_students'),
     getStudent);
-router.post('/:id',
-    upload.single('image'),
-    roleMiddleware(['admin']),
-    checkPermission('create_student'),
-    createStudent);
-router.put('/:id',
-    upload.single('image'),
-    roleMiddleware(['admin','faculty']), 
-    checkPermission('update_student'),
-    updateStudent);
-router.delete('/:id',deleteStudent);
+router.put('/profile/:id',
+    upload.single('image'), 
+    authUser, 
+    roleMiddleware(['student']), 
+    checkPermission('update-self'), 
+    updateStudentProfile);
+router.delete('/:id',
+    roleMiddleware(['admin']), 
+    checkPermission('delete_student'), 
+    deleteStudent,);
 
 module.exports=router;

@@ -1,6 +1,6 @@
 const express = require('express')
 const mongoose = require('mongoose');
-const subjectSchema = require('../schemas/subjectSchema');
+const studentSchema = require('../schemas/studentSchema');
 
-const subjectModel = mongoose.model('subjectModel', subjectSchema,'subject');
-module.exports=subjectModel;
+const studentModel = mongoose.model('studentModel', studentSchema,'student');
+module.exports=studentModel;

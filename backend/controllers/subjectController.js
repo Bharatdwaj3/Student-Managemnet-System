@@ -1,5 +1,5 @@
-const Subject = require("../models/studentModel");
-const cloudinary = require("../services/cloudinary"); 
+const Subject = require("../models/subjectModel");
+ 
 const getSubjects = async (req, res) => {
   try {
     const Subjects = await Subject.find({});
@@ -22,15 +22,24 @@ const getSubject = async (req, res) => {
 const createSubject = async (req, res) => {
 
   try{
-    const SubjectData=req.body;
-    if(req.file){
-      SubjectData.imageUrl=req.file.path;
-      SubjectData.cloudinaryId=req.file.filename;
-    }    
-    const Subject =  await Subject.create(SubjectData);
-    res.status(201).json(Subject);
+
+    const {userId}=req.params;
+    const {name, code, dept}=req.body;
+    if(req.user.id.toString()!==userId){
+      return res.status(403).json({message: "You can only create subjects for yourself!"})
+    }
+
+    const subjectData = await Subject.create({
+      userId,
+      name,
+      code, dept
+    });
+    res.status(201).json(subjectData);
   }catch(error){
     console.error("Error creating Subject: ".error);
+    if (error.code === 11000) {
+      return res.status(400).json({ message: "You already have a subject with this code" });
+    }
     res.status(500).json({message: error.message});
   }
 }
@@ -38,14 +47,17 @@ const updateSubject = async (req, res) => {
   try {
     const { id } = req.params;
     const updateData = req.body;
-    if(req.file){
-      updateData.imageUrl=req.file.path;
-      updateData.cloudinaryId=req.file.filename;
-    }
-    const Subject = await Subject.findByIdAndUpdate(id, updateData, {new: true});
-    if (!Subject) {
+
+    const subjectData = await Subject.findByIdAndUpdate(id, updateData, {new: true});
+    if (!subjectData) {
       return res.status(404).json({ message: "Subject not found" });
     }
+    if(subjectData.userId.toString()!=req.user.id.toString()&& req.user.role!=='admin'){
+      return res.status(403).json({message: "You can only update your own subjects "})
+    }
+    const updatedSubject=await Subject.findByIdAndUpdate(
+      id, updateData, {new : true, runValidators: true}
+    );
 
     res.status(200).json(Subject);
   } catch (error) {
@@ -58,16 +70,12 @@ const deleteSubject = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const Subject = await Subject.findByIdAndDelete(id);
+    const subjectData = await Subject.findByIdAndDelete(id);
 
-    if (!Subject) {
+    if (!subjectData.userId.toString()!==req.userr.id.toString()&& req.user.role!=='admin') {
       return res.status(404).json({ message: "Subject not found" });
     }
-
-    if(Subject.cloudinaryId){
-      await cloudinary.uploader.destroy(Subject.cloudinaryId);
-    }
-
+    await Subject.findByIdAndDelete(id);
     res.status(200).json({ message: "Subject deleted successfully" });
   } catch (error) {
     console.error("Error deleting Subject: ",error);

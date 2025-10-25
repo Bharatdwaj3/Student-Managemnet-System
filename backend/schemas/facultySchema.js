@@ -1,10 +1,10 @@
 const mongoose=require('mongoose');
-const subjectSchema=new mongoose.Schema({
+const facultySchema=new mongoose.Schema({
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'user', required: true },
     name: {type:String, required: true, trim: true},
     age: {type:Number, required: true, trim: true},
     gender: {type:String, required: true, trim: true},
     
-    id: {type:Number, required: true, trim: true},
     email: {type:String, required: true, trim: true},
     phone: {type:Number, required: true, trim: true},
 
@@ -15,5 +15,5 @@ const subjectSchema=new mongoose.Schema({
     cloudinaryId:{type:String}
 });
 
-module.exports-subjectSchema;
+module.exports=facultySchema;
 

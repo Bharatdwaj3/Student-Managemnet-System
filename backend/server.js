@@ -11,8 +11,8 @@ const subjectRoutes=require('./routes/subjectRoutes');
 const userRoutes=require('./routes/userRoutes');
 const studentRoutes=require('./routes/studentRoutes');
 
-const { PORT, SESSION_SECRET, MONGO_URI } = require('./config/env.config');
-const connnectDB=require('./db');
+const { PORT, SESSION_SECRECT, MONGO_URI } = require('./config/env.config');
+const connnectDB=require('./config/db.config');
 
 const app=express();
 
@@ -25,7 +25,7 @@ app.use(cors({
 }));
 app.use(cookieParser());
 app.use(session({
-    secret:SESSION_SECRET,
+    secret:SESSION_SECRECT,
     resave: false,
     saveUninitialized: true,
     store: new MongoStore({

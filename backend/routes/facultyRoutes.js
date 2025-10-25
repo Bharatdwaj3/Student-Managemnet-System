@@ -2,36 +2,33 @@ const express=require('express');
 const router=express.Router();
 const upload=require('../services/multer');
 const{
-    getFaculty, createFaculty, updateFaculty,deleteFaculty, 
-    getFacultys,
+    getFaculty, deleteFaculty, 
+    getFacultys,updateFacultyProfile
     
-} =require('../controllers/FacultyController');
+} =require('../controllers/facultyController');
 
 const checkPermission = require('../middleware/checkPermission');
 const roleMiddleware = require('../middleware/roleMiddleware');
-
+const authUser=require('../middleware/authMiddleware');
 
 router.get('/',
     roleMiddleware(['admin','faculty','student']),
     checkPermission('view_facultys'),
     getFacultys);
 router.get('/:id',
-    roleMiddleware(['admin','faculty','student']),
-    checkPermission('view_facultys'),
+    authUser, 
+    roleMiddleware(['faculty']), 
+    checkPermission('view-self'),
     getFaculty);
-router.post('/:id',
-    upload.single('image'),
-    roleMiddleware(['admin',]),
-    checkPermission('create_faculty'),
-    createFaculty);
-router.put('/:id',
-    roleMiddleware(['admin']),
-    checkPermission('update_faculty'),
-    upload.single('image'),
-    updateFaculty);
+router.put('/profile/:id',
+    upload.single('image'), 
+    authUser, 
+    roleMiddleware(['faculty']), 
+    checkPermission('update-self'), 
+    updateFacultyProfile);
 router.delete('/:id',
-    roleMiddleware(['admin']),
-    checkPermission('delete_facultys'),
+    roleMiddleware(['admin']), 
+    checkPermission('delete_student'), 
     deleteFaculty);
 
 module.exports=router;
